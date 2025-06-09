@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
+import { getVersion } from './version'
 import startCommand from './commands/start'
 import stopCommand from './commands/stop'
 import statusCommand from './commands/status'
 import logsCommand from './commands/logs'
 
 const program = new Command()
-const version = '1.0.0'
+const version = getVersion()
 
 program
   .name('statehub')

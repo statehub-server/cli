@@ -1,21 +1,26 @@
 {
-  "name": "cli",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@statehub/cli",
+  "version": "0.1.0-beta+rd.20250608",
+  "description": "CLI tool to manage your Statehub game server",
   "author": "Olivia Shebang",
+  "license": "MIT",
   "type": "commonjs",
   "main": "dist/index.js",
   "bin": {
     "statehub": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "core-dist",
+    "LICENSE",
+    "package.json"
   ],
   "scripts": {
     "build": "tsc",
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build && npm run bundle-core && chmod +x dist/index.js",
     "bundle-core": "rm -rf core-dist && mkdir -p core-dist && cp -r ../core/dist/* ./core-dist",
-    "relink": "npm run build && npm run bundle-core && chmod +x dist/index.js && npm link"
+    "relink": "npm run prepublishOnly && npm link --force",
+    "set-version": "node scripts/version.js"
   },
   "devDependencies": {
     "@types/node": "^22.15.18",
