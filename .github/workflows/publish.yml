@@ -1,4 +1,4 @@
-name: Publish Package
+name: Build and Publish CLI
 
 on:
   push:
@@ -6,26 +6,48 @@ on:
       - 'v*'
 
 jobs:
-  publish:
+  build-publish:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
 
-      - name: Use Node.js
+    steps:
+      - name: Checkout CLI repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Core repo
+        run: |
+          git clone https://github.com/statehub-server/core ../core
+        # currently we just take whatever is on main. May change later.
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: 18
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install and build Core
+        run: |
+          cd ../core
+          npm install
+          npm run build
 
-      - name: Build
-        run: npm run prepublishOnly
+      - name: Install and build CLI
+        run: |
+          npm install
+          npm run build
+
+      - name: Bundle Core into CLI
+        run: |
+          rm -rf core-dist
+          mkdir core-dist
+          cp -r ../core/dist/* core-dist/
+
+      - name: Prepare CLI for publish
+        run: |
+          chmod +x dist/index.js
 
       - name: Publish to npm
-        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
+        run: npm publish --access public
