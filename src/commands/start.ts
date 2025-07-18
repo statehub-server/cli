@@ -18,10 +18,8 @@ const startCommand = new Command('start')
   .option('--google-client-secret-web <secret>', 'Google OAuth2 client secret for web flow', '')
   .option('--google-redirect-uri <uri>', 'Google OAuth2 redirect URI for web flow', '')
 
-  // Discord OAuth2 (Device + Web)
-  .option('--discord-client-id-device <id>', 'Discord OAuth2 Client ID for device flow', '')
+  // Discord OAuth2
   .option('--discord-client-id-web <id>', 'Discord OAuth2 Client ID for web flow', '')
-  .option('--discord-client-secret-device <secret>', 'Discord OAuth2 client secret for device flow', '')
   .option('--discord-client-secret-web <secret>', 'Discord OAuth2 client secret for web flow', '')
   .option('--discord-redirect-uri <uri>', 'Discord OAuth2 redirect URI for web flow', '')
 
