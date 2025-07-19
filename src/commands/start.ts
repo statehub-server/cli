@@ -16,12 +16,12 @@ const startCommand = new Command('start')
   .option('--google-client-id-web <id>', 'Google OAuth2 Client ID for web flow', '')
   .option('--google-client-secret-device <secret>', 'Google OAuth2 client secret for device flow', '')
   .option('--google-client-secret-web <secret>', 'Google OAuth2 client secret for web flow', '')
-  .option('--google-redirect-uri <uri>', 'Google OAuth2 redirect URI for web flow', '')
+  .option('--google-redirect-url <url>', 'Google OAuth2 redirect url for web flow', '')
 
   // Discord OAuth2
   .option('--discord-client-id-web <id>', 'Discord OAuth2 Client ID for web flow', '')
   .option('--discord-client-secret-web <secret>', 'Discord OAuth2 client secret for web flow', '')
-  .option('--discord-redirect-uri <uri>', 'Discord OAuth2 redirect URI for web flow', '')
+  .option('--discord-redirect-url <url>', 'Discord OAuth2 redirect url for web flow', '')
 
   .action(options => startServer(options))
 
@@ -44,8 +44,8 @@ function startServer(options: any) {
   || options.googleClientSecretDevice
   process.env.OAUTH_GOOGLE_CLIENT_SECRET_WEB = process.env.OAUTH_GOOGLE_CLIENT_SECRET_WEB
   || options.googleClientSecretWeb
-  process.env.OAUTH_GOOGLE_REDIRECT_URI = process.env.OAUTH_GOOGLE_REDIRECT_URI
-  || options.googleRedirectUri
+  process.env.OAUTH_GOOGLE_REDIRECT_URL = process.env.OAUTH_GOOGLE_REDIRECT_URL
+  || options.googleRedirecturl
 
 
   // Discord OAuth2
@@ -57,8 +57,8 @@ function startServer(options: any) {
   || options.discordClientSecretDevice
   process.env.OAUTH_DISCORD_CLIENT_SECRET_WEB = process.env.OAUTH_DISCORD_CLIENT_SECRET_WEB
   || options.discordClientSecretWeb
-  process.env.OAUTH_DISCORD_REDIRECT_URI = process.env.OAUTH_DISCORD_REDIRECT_URI
-  || options.discordRedirectUri
+  process.env.OAUTH_DISCORD_REDIRECT_URL = process.env.OAUTH_DISCORD_REDIRECT_URL
+  || options.discordRedirecturl
 
 
   spawnServerService()
