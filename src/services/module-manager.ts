@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import crypto from 'crypto'
 import fetch from 'node-fetch'
 import AdmZip from 'adm-zip'
 import chalk from 'chalk'
