@@ -1,6 +1,6 @@
 {
   "name": "@statehub/cli",
-  "version": "0.3.1-beta+rd.20250615",
+  "version": "0.4.0-beta+rd.20250805",
   "description": "CLI tool to manage your Statehub game server",
   "author": "Olivia Shebang",
   "license": "MIT",
