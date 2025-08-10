@@ -263,6 +263,17 @@ export function findModule(moduleName: string): { url: string; source: Repositor
   return null
 }
 
+// Get the proper module path for namespaced or regular modules
+function getModulePath(moduleName: string): string {
+  if (moduleName.startsWith('@')) {
+    // For namespaced modules like @namespace/module, create @namespace/module directory
+    return path.join(MODULES_DIR, moduleName)
+  } else {
+    // For regular modules, just use the module name
+    return path.join(MODULES_DIR, moduleName)
+  }
+}
+
 export async function installModule(moduleName: string): Promise<void> {
   await ensureOfficialRepository()
   await refreshCache()
@@ -272,7 +283,7 @@ export async function installModule(moduleName: string): Promise<void> {
     throw new Error(`Module '${moduleName}' not found in any repository`)
   }
 
-  const modulePath = path.join(MODULES_DIR, moduleName)
+  const modulePath = getModulePath(moduleName)
   
   if (fs.existsSync(modulePath)) {
     throw new Error(`Module '${moduleName}' is already installed`)
@@ -281,6 +292,12 @@ export async function installModule(moduleName: string): Promise<void> {
   const spinner = ora(`Installing ${moduleName}...`).start()
   
   try {
+    // Ensure the parent directory exists for namespaced modules
+    const parentDir = path.dirname(modulePath)
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true })
+    }
+    
     // Download module zip
     const tempZip = path.join(os.tmpdir(), `${moduleName.replace(/[@\/]/g, '_')}_${Date.now()}.zip`)
     await downloadFile(moduleInfo.url, tempZip)
@@ -326,7 +343,7 @@ export async function installModule(moduleName: string): Promise<void> {
 }
 
 export function uninstallModule(moduleName: string): void {
-  const modulePath = path.join(MODULES_DIR, moduleName)
+  const modulePath = getModulePath(moduleName)
   
   if (!fs.existsSync(modulePath)) {
     throw new Error(`Module '${moduleName}' is not installed`)
@@ -346,7 +363,7 @@ export function uninstallModule(moduleName: string): void {
 }
 
 export async function updateModule(moduleName: string): Promise<void> {
-  const modulePath = path.join(MODULES_DIR, moduleName)
+  const modulePath = getModulePath(moduleName)
   
   if (!fs.existsSync(modulePath)) {
     throw new Error(`Module '${moduleName}' is not installed`)
@@ -415,15 +432,45 @@ export async function updateModule(moduleName: string): Promise<void> {
   }
 }
 
+// Recursively find all modules in the modules directory
+function findAllInstalledModules(): string[] {
+  const modules: string[] = []
+  
+  if (!fs.existsSync(MODULES_DIR)) {
+    return modules
+  }
+  
+  function scanDirectory(dir: string, namespace?: string): void {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const entryPath = path.join(dir, entry.name)
+        const manifestPath = path.join(entryPath, 'manifest.json')
+        
+        if (entry.name.startsWith('@') && !namespace) {
+          // This is a namespace directory, scan inside it
+          scanDirectory(entryPath, entry.name)
+        } else if (fs.existsSync(manifestPath)) {
+          // This is a module directory with manifest
+          if (namespace) {
+            modules.push(`${namespace}/${entry.name}`)
+          } else {
+            modules.push(entry.name)
+          }
+        }
+      }
+    }
+  }
+  
+  scanDirectory(MODULES_DIR)
+  return modules
+}
+
 export function listInstalledModules(extended: boolean = false): void {
   ensureDirectories()
   
-  if (!fs.existsSync(MODULES_DIR)) {
-    console.log(chalk.yellow('No modules installed'))
-    return
-  }
-
-  const moduleNames = fs.readdirSync(MODULES_DIR)
+  const moduleNames = findAllInstalledModules()
   
   if (moduleNames.length === 0) {
     console.log(chalk.yellow('No modules installed'))
@@ -434,7 +481,7 @@ export function listInstalledModules(extended: boolean = false): void {
   console.log(chalk.gray('─'.repeat(50)))
 
   for (const moduleName of moduleNames) {
-    const modulePath = path.join(MODULES_DIR, moduleName)
+    const modulePath = getModulePath(moduleName)
     const manifestPath = path.join(modulePath, 'manifest.json')
     
     if (!fs.existsSync(manifestPath)) {
