@@ -15,7 +15,6 @@ export interface ModuleManifest {
   entryPoint?: string
   repo?: string
   dependencies?: string[]
-  multiInstanceSpawning?: boolean
 }
 
 export interface RepositorySource {
@@ -27,7 +26,6 @@ export interface RepositorySource {
 }
 
 export interface Settings {
-  loadBalancing?: Record<string, number>
   [key: string]: any
 }
 
@@ -316,16 +314,6 @@ export async function installModule(moduleName: string): Promise<void> {
       throw new Error('Invalid manifest: missing required fields (name, version, author)')
     }
     
-    spinner.text = `Updating settings...`
-    
-    // Update settings.json
-    const settings = getSettings()
-    if (!settings.loadBalancing) {
-      settings.loadBalancing = {}
-    }
-    settings.loadBalancing[moduleName] = 1
-    saveSettings(settings)
-    
     spinner.succeed(`Module '${moduleName}' installed successfully`)
   } catch (error) {
     // Clean up on failure
@@ -349,13 +337,6 @@ export function uninstallModule(moduleName: string): void {
   try {
     // Remove module directory
     fs.rmSync(modulePath, { recursive: true })
-    
-    // Update settings.json
-    const settings = getSettings()
-    if (settings.loadBalancing && settings.loadBalancing[moduleName]) {
-      delete settings.loadBalancing[moduleName]
-      saveSettings(settings)
-    }
     
     spinner.succeed(`Module '${moduleName}' uninstalled successfully`)
   } catch (error) {
@@ -471,7 +452,13 @@ export function listInstalledModules(extended: boolean = false): void {
         console.log(chalk.gray(`  Author: ${manifest.author}`))
         console.log(chalk.gray(`  License: ${manifest.license || 'N/A'}`))
         console.log(chalk.gray(`  Entry Point: ${manifest.entryPoint || 'dist/index.js'}`))
-        console.log(chalk.gray(`  Multi-Instance: ${manifest.multiInstanceSpawning ? 'Yes' : 'No'}`))
+        
+        // Extract and display namespace if present
+        if (manifest.name.startsWith('@')) {
+          const namespace = manifest.name.split('/')[0]
+          console.log(chalk.gray(`  Namespace: ${namespace}`))
+        }
+        
         if (manifest.dependencies && manifest.dependencies.length > 0) {
           console.log(chalk.gray(`  Dependencies: ${manifest.dependencies.join(', ')}`))
         }
