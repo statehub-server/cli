@@ -4,7 +4,7 @@ import { listInstalledModules } from '../services/module-manager'
 
 const modlistCommand = new Command('modlist')
   .description('List installed modules')
-  .option('--extended', 'Show extended information about modules')
+  .option('-e, --extended', 'Show extended information about modules')
   .action((options) => {
     try {
       listInstalledModules(options.extended)

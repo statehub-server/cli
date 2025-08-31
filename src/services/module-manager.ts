@@ -467,6 +467,36 @@ function findAllInstalledModules(): string[] {
   return modules
 }
 
+export async function updateAllModules(): Promise<void> {
+  const installedModules = findAllInstalledModules()
+  
+  if (installedModules.length === 0) {
+    console.log(chalk.yellow('No modules installed to update'))
+    return
+  }
+  
+  console.log(chalk.blue(`Found ${installedModules.length} installed modules`))
+  
+  let updatedCount = 0
+  let errorCount = 0
+  
+  for (const moduleName of installedModules) {
+    try {
+      await updateModule(moduleName)
+      updatedCount++
+    } catch (error) {
+      errorCount++
+      console.error(chalk.red(`Failed to update ${moduleName}: ${error instanceof Error ? error.message : String(error)}`))
+    }
+  }
+  
+  console.log()
+  console.log(chalk.green(`✓ ${updatedCount} modules updated successfully`))
+  if (errorCount > 0) {
+    console.log(chalk.red(`✗ ${errorCount} modules failed to update`))
+  }
+}
+
 export function listInstalledModules(extended: boolean = false): void {
   ensureDirectories()
   
